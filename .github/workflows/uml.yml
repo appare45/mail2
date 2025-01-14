@@ -1,0 +1,46 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: UML
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  render-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+
+      - name: Install goplantuml
+        run: go install github.com/jfeliu007/goplantuml/cmd/goplantuml@latest
+
+      - name: Generate UML
+        run: goplantuml -recursive -show-aggregations -show-connection-labels ./ > _created.puml
+
+      - name: Generate SVG Diagrams
+        uses: holowinski/plantuml-github-action@1.2021.1
+        with:
+          args: -v -tsvg _created.puml
+
+      - name: Install
+        run: sudo apt install graphviz
+      - name: Install dot
+        run: go install github.com/kisielk/godepgraph@latest
+      - run: godepgraph -novendor -s ./ | dot -Tsvg -o godepgraph.svg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            _created.puml
+            _created.svg
+            godepgraph.svg
