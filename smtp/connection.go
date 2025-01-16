@@ -10,11 +10,10 @@ import (
 )
 
 type SmtpConnection struct {
-	rowConn   net.Conn
-	conn      *textproto.Conn
-	bufReader *bufio.Reader // そのうち消す（readline用に作った）
-	reader    io.Reader
-	scanner   *bufio.Scanner
+	rowConn net.Conn
+	conn    *textproto.Conn
+	reader  io.Reader
+	scanner *bufio.Scanner
 }
 
 /**
@@ -41,18 +40,6 @@ func (c SmtpConnection) Write(format string, args ...any) error {
 	slog.Debug("Sending", "MESSAGE", fmt.Sprintf(format, args...))
 	_, error := c.conn.Cmd(format, args...)
 	return error
-}
-
-/**
- * Write writes a raw message to the connection
- * @param format: Format of the message
- * @param args: Arguments to the format
- * @return error: Error if any
- */
-func (c *SmtpConnection) ReadLine() (string, error) {
-	line, error := c.bufReader.ReadString('\n')
-	slog.Debug("Received", "LINE", line)
-	return line, error
 }
 
 func (c SmtpConnection) Read(expectCode int) (*Response, error) {
@@ -86,12 +73,10 @@ func IntoSmtpConnection(conn net.Conn) *SmtpConnection {
 	textProtoConn := textproto.NewConn(conn)
 	bufreader := bufio.NewReader(conn)
 	scanner := bufio.NewScanner(bufreader)
-	reader := io.Reader(conn)
 	return &SmtpConnection{
 		conn,
 		textProtoConn,
 		bufreader,
-		reader,
 		scanner,
 	}
 }

@@ -27,6 +27,5 @@ func (s *smtpScanner) Peek() rune {
 
 func (s *smtpScanner) Next() rune {
 	r := s.r.Next()
-	// slog.Debug("Read", "rune", scanner.TokenString(r))
 	return r
 }

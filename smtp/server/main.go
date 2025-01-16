@@ -44,8 +44,6 @@ func (s Server) Start() {
 				}
 				connection.WriteResponse(cmd)
 			}
-			// TODO slogにする（テストで見えないので一時的にfmtを使っている）
-			fmt.Println(connection.ReadLine())
 		}(conn)
 	}
 }
